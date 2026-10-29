@@ -1,4 +1,4 @@
-index,ID,Nhom,May/Nguoi,Minh chung can chup/Kiem thu,Ky vong,Trang thai,Danh sach tep anh hoac video,Ghi chu
+ID,Nhom,May/Nguoi,Minh chung can chup/Kiem thu,Ky vong,Trang thai,Danh sach tep anh hoac video,Ghi chu
 E01,Preflight,SERVERA,AD DS DNS domain va IP,10.0.0.1 fittdtu.com,CHUA_KIEM_TRA,,
 E02,Preflight,SERVERB,Domain join va IP,10.0.0.2 fittdtu.com,CHUA_KIEM_TRA,,
 E03,OU,SERVERA,Cay OU Employees Workstations Groups,6 OU con va 3 group,CHUA_KIEM_TRA,,
