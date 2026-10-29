@@ -18,15 +18,18 @@ $specs = @(
     @{Name='SalesDocs';      Group='GG_Sales_RW';      File='KeHoach_Sales.txt';      Text='Ke hoach Sales - TDTU P07'},
     @{Name='AccountingDocs'; Group='GG_Accounting_RW'; File='BaoCao_Accounting.txt'; Text='Bao cao Accounting - TDTU P07'}
 )
+# Validate both targets BEFORE any writes to avoid partially configuring one share.
 foreach ($spec in $specs) {
     $path = Join-Path $base $spec.Name
-    # Refuse to touch existing folders/shares: explicit NTFS ACEs may grant unwanted rights.
     if (Test-Path -LiteralPath $path) {
-        throw "Folder $path exists: inspect existing ACLs and contents manually. No changes were made."
+        throw "Folder $path already exists. Inspect its data and NTFS ACL manually; aborting both shares."
     }
     if (Get-SmbShare -Name $spec.Name -ErrorAction SilentlyContinue) {
-        throw "Share $($spec.Name) exists: inspect its path/permissions manually. No changes were made."
+        throw "SMB share $($spec.Name) already exists. Inspect its path and ACL; aborting both shares."
     }
+}
+foreach ($spec in $specs) {
+    $path = Join-Path $base $spec.Name
     New-Item -ItemType Directory -Path $path -Force | Out-Null
     $group = "$netbios\$($spec.Group)"
     # Block inherited NTFS ACEs: keep SYSTEM + BUILTIN Administrators + relevant department only.
