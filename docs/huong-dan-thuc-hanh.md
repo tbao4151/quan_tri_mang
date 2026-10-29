@@ -191,7 +191,7 @@ Share UNC:
 | SalesDocs | `GG_Sales_RW: Change`; `Administrators: Full` | `GG_Sales_RW: Modify`; `Administrators: Full`; `SYSTEM: Full` |
 | AccountingDocs | `GG_Accounting_RW: Change`; `Administrators: Full` | `GG_Accounting_RW: Modify`; `Administrators: Full`; `SYSTEM: Full` |
 
-Không cấp quyền cho nhóm chéo, `Everyone` hoặc `Authenticated Users` trên thư mục bộ phận. Nếu share đã tồn tại, script **không ghi đè share ACL**: mở `Computer Management > Shared Folders > Shares > Properties > Share Permissions` và kiểm tra/gỡ ACE thừa. Trên `Properties > Security > Advanced` kiểm tra NTFS, kể cả các quyền inherited. NTFS Modify cho phép tạo, chỉnh sửa và xóa tệp: phù hợp yêu cầu đọc/ghi; nếu chỉ cần đọc và cập nhật nhưng không xóa thì thiết kế riêng (ngoài phạm vi đề).
+Không cấp quyền cho nhóm chéo, `Everyone` hoặc `Authenticated Users` trên thư mục bộ phận. Nếu folder/share đã tồn tại, script **dừng trước khi cấu hình** để tránh ghi đè dữ liệu/quyền NTFS tường minh có sẵn. Khi đó phải rà soát thủ công rồi chọn thư mục lab trống; mở `Computer Management > Shared Folders > Shares > Properties > Share Permissions` và kiểm tra/gỡ ACE thừa. Trên `Properties > Security > Advanced` kiểm tra NTFS, kể cả các quyền inherited. NTFS Modify cho phép tạo, chỉnh sửa và xóa tệp: phù hợp yêu cầu đọc/ghi; nếu chỉ cần đọc và cập nhật nhưng không xóa thì thiết kế riêng (ngoài phạm vi đề).
 
 **Lệnh xem minh chứng (SERVERB):**
 ```powershell
