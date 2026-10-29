@@ -1,205 +1,92 @@
 # Checklist minh chứng — Đồ án 07
 
-Đánh dấu hoàn thành sau khi có ảnh/video hoặc kết quả xuất **thực tế**. Trạng thái ban đầu là **CHƯA KIỂM TRA**; không tự coi bảng kỳ vọng là kết quả thực nghiệm.
+Đánh dấu hoàn thành sau khi có ảnh/video hoặc kết quả xuất **thực tế**. Trạng thái ban đầu là **CHƯA KIỂM TRA**; bảng này mô tả kỳ vọng chứ không phải kết quả đã nghiệm thu.
 
-
-## undefined
-
-| ID | Máy/người dùng | Minh chứng cần thu | Kết quả kỳ vọng | Đã kiểm tra |
-|---|---|---|---|---|
-| TAB NAME: Bang_Kiem_Tra_Minh_Chung.csv> | undefined | undefined | undefined | [ ] |
-
-## ID
+## Preflight
 
 | ID | Máy/người dùng | Minh chứng cần thu | Kết quả kỳ vọng | Đã kiểm tra |
 |---|---|---|---|---|
-| index | Nhom | May/Nguoi | Minh chung can chup/Kiem thu | [ ] |
+| E01 | SERVERA | AD DS DNS domain va IP | 10.0.0.1 fittdtu.com | [ ] |
+| E02 | SERVERB | Domain join va IP | 10.0.0.2 fittdtu.com | [ ] |
 
-## E01
-
-| ID | Máy/người dùng | Minh chứng cần thu | Kết quả kỳ vọng | Đã kiểm tra |
-|---|---|---|---|---|
-| 0 | Preflight | SERVERA | AD DS DNS domain va IP | [ ] |
-
-## E02
+## OU
 
 | ID | Máy/người dùng | Minh chứng cần thu | Kết quả kỳ vọng | Đã kiểm tra |
 |---|---|---|---|---|
-| 1 | Preflight | SERVERB | Domain join va IP | [ ] |
+| E03 | SERVERA | Cay OU Employees Workstations Groups | 6 OU con va 3 group | [ ] |
+| E04 | SERVERA | Member cua 3 security groups | sales01 acc01 hr01 dung group | [ ] |
 
-## E03
-
-| ID | Máy/người dùng | Minh chứng cần thu | Kết quả kỳ vọng | Đã kiểm tra |
-|---|---|---|---|---|
-| 2 | OU | SERVERA | Cay OU Employees Workstations Groups | [ ] |
-
-## E04
+## GPO
 
 | ID | Máy/người dùng | Minh chứng cần thu | Kết quả kỳ vọng | Đã kiểm tra |
 |---|---|---|---|---|
-| 3 | OU | SERVERA | Member cua 3 security groups | [ ] |
+| E05 | SERVERA | P07_Lock_15m settings va link | 900s Workstations | [ ] |
+| E06 | SERVERA | P07_Lock_5m settings va 2 links | 300s Sales Accounting | [ ] |
+| E07 | PC-SAL-01 | Registry gpresult computer va lock that | 300s va 5phut | [ ] |
+| E08 | PC-ACC-01 | Registry gpresult computer va lock that | 300s va 5phut | [ ] |
+| E09 | PC-HR-01 | Registry gpresult computer va lock that | 900s va 15phut | [ ] |
 
-## E05
-
-| ID | Máy/người dùng | Minh chứng cần thu | Kết quả kỳ vọng | Đã kiểm tra |
-|---|---|---|---|---|
-| 4 | GPO | SERVERA | P07_Lock_15m settings va link | [ ] |
-
-## E06
+## Starter
 
 | ID | Máy/người dùng | Minh chứng cần thu | Kết quả kỳ vọng | Đã kiểm tra |
 |---|---|---|---|---|
-| 5 | GPO | SERVERA | P07_Lock_5m settings va 2 links | [ ] |
+| E10 | SERVERA | Starter_No_ControlPanel + thiet lap | mau Administrative Templates Enabled | [ ] |
+| E11 | SERVERA | GPO tu Starter va 2 links | P07_Restrict_ControlPanel Sales Accounting | [ ] |
 
-## E07
-
-| ID | Máy/người dùng | Minh chứng cần thu | Kết quả kỳ vọng | Đã kiểm tra |
-|---|---|---|---|---|
-| 6 | GPO | PC-SAL-01 | Registry gpresult computer va lock that | [ ] |
-
-## E08
+## ControlPanel
 
 | ID | Máy/người dùng | Minh chứng cần thu | Kết quả kỳ vọng | Đã kiểm tra |
 |---|---|---|---|---|
-| 7 | GPO | PC-ACC-01 | Registry gpresult computer va lock that | [ ] |
+| E12 | sales01 | Mo Control Panel | Access blocked | [ ] |
+| E13 | acc01 | Mo Control Panel | Access blocked | [ ] |
+| E14 | hr01 | Mo Control Panel | Allowed | [ ] |
 
-## E09
-
-| ID | Máy/người dùng | Minh chứng cần thu | Kết quả kỳ vọng | Đã kiểm tra |
-|---|---|---|---|---|
-| 8 | GPO | PC-HR-01 | Registry gpresult computer va lock that | [ ] |
-
-## E10
+## Share
 
 | ID | Máy/người dùng | Minh chứng cần thu | Kết quả kỳ vọng | Đã kiểm tra |
 |---|---|---|---|---|
-| 9 | Starter | SERVERA | Starter_No_ControlPanel + thiet lap | [ ] |
+| E15 | SERVERB | SalesDocs Share va NTFS | Only Sales RW + admin | [ ] |
+| E16 | SERVERB | AccountingDocs Share va NTFS | Only Accounting RW + admin | [ ] |
 
-## E11
-
-| ID | Máy/người dùng | Minh chứng cần thu | Kết quả kỳ vọng | Đã kiểm tra |
-|---|---|---|---|---|
-| 10 | Starter | SERVERA | GPO tu Starter va 2 links | [ ] |
-
-## E12
+## Drive
 
 | ID | Máy/người dùng | Minh chứng cần thu | Kết quả kỳ vọng | Đã kiểm tra |
 |---|---|---|---|---|
-| 11 | ControlPanel | sales01 | Mo Control Panel | [ ] |
+| E17 | sales01 | Net use + This PC | S: SalesDocs | [ ] |
+| E18 | acc01 | Net use + This PC | A: AccountingDocs | [ ] |
+| E19 | hr01 | Net use + This PC | No S: A: | [ ] |
 
-## E13
-
-| ID | Máy/người dùng | Minh chứng cần thu | Kết quả kỳ vọng | Đã kiểm tra |
-|---|---|---|---|---|
-| 12 | ControlPanel | acc01 | Mo Control Panel | [ ] |
-
-## E14
+## UNC
 
 | ID | Máy/người dùng | Minh chứng cần thu | Kết quả kỳ vọng | Đã kiểm tra |
 |---|---|---|---|---|
-| 13 | ControlPanel | hr01 | Mo Control Panel | [ ] |
+| E20 | sales01 | Read and write SalesDocs | Allowed | [ ] |
+| E21 | sales01 | Try AccountingDocs | Access denied | [ ] |
+| E22 | acc01 | Read and write AccountingDocs | Allowed | [ ] |
+| E23 | acc01 | Try SalesDocs | Access denied | [ ] |
+| E24 | hr01 | Try SalesDocs | Access denied | [ ] |
+| E25 | hr01 | Try AccountingDocs | Access denied | [ ] |
 
-## E15
-
-| ID | Máy/người dùng | Minh chứng cần thu | Kết quả kỳ vọng | Đã kiểm tra |
-|---|---|---|---|---|
-| 14 | Share | SERVERB | SalesDocs Share va NTFS | [ ] |
-
-## E16
-
-| ID | Máy/người dùng | Minh chứng cần thu | Kết quả kỳ vọng | Đã kiểm tra |
-|---|---|---|---|---|
-| 15 | Share | SERVERB | AccountingDocs Share va NTFS | [ ] |
-
-## E17
+## RSoP
 
 | ID | Máy/người dùng | Minh chứng cần thu | Kết quả kỳ vọng | Đã kiểm tra |
 |---|---|---|---|---|
-| 16 | Drive | sales01 | Net use + This PC | [ ] |
+| E26 | PC-SAL-01 | gpresult user + computer HTML | Correct Applied GPOs | [ ] |
+| E27 | PC-ACC-01 | gpresult user + computer HTML | Correct Applied GPOs | [ ] |
+| E28 | PC-HR-01 | gpresult user + computer HTML | Correct Applied GPOs | [ ] |
 
-## E18
-
-| ID | Máy/người dùng | Minh chứng cần thu | Kết quả kỳ vọng | Đã kiểm tra |
-|---|---|---|---|---|
-| 17 | Drive | acc01 | Net use + This PC | [ ] |
-
-## E19
+## Diagnostic
 
 | ID | Máy/người dùng | Minh chứng cần thu | Kết quả kỳ vọng | Đã kiểm tra |
 |---|---|---|---|---|
-| 18 | Drive | hr01 | Net use + This PC | [ ] |
+| E29 | PC-SAL-01 before | Sai OU + gpresult + registry | 900 seconds | [ ] |
+| E30 | PC-SAL-01 after | Dung OU + gpresult + registry | 300 seconds | [ ] |
 
-## E20
-
-| ID | Máy/người dùng | Minh chứng cần thu | Kết quả kỳ vọng | Đã kiểm tra |
-|---|---|---|---|---|
-| 19 | UNC | sales01 | Read and write SalesDocs | [ ] |
-
-## E21
+## Video
 
 | ID | Máy/người dùng | Minh chứng cần thu | Kết quả kỳ vọng | Đã kiểm tra |
 |---|---|---|---|---|
-| 20 | UNC | sales01 | Try AccountingDocs | [ ] |
-
-## E22
-
-| ID | Máy/người dùng | Minh chứng cần thu | Kết quả kỳ vọng | Đã kiểm tra |
-|---|---|---|---|---|
-| 21 | UNC | acc01 | Read and write AccountingDocs | [ ] |
-
-## E23
-
-| ID | Máy/người dùng | Minh chứng cần thu | Kết quả kỳ vọng | Đã kiểm tra |
-|---|---|---|---|---|
-| 22 | UNC | acc01 | Try SalesDocs | [ ] |
-
-## E24
-
-| ID | Máy/người dùng | Minh chứng cần thu | Kết quả kỳ vọng | Đã kiểm tra |
-|---|---|---|---|---|
-| 23 | UNC | hr01 | Try SalesDocs | [ ] |
-
-## E25
-
-| ID | Máy/người dùng | Minh chứng cần thu | Kết quả kỳ vọng | Đã kiểm tra |
-|---|---|---|---|---|
-| 24 | UNC | hr01 | Try AccountingDocs | [ ] |
-
-## E26
-
-| ID | Máy/người dùng | Minh chứng cần thu | Kết quả kỳ vọng | Đã kiểm tra |
-|---|---|---|---|---|
-| 25 | RSoP | PC-SAL-01 | gpresult user + computer HTML | [ ] |
-
-## E27
-
-| ID | Máy/người dùng | Minh chứng cần thu | Kết quả kỳ vọng | Đã kiểm tra |
-|---|---|---|---|---|
-| 26 | RSoP | PC-ACC-01 | gpresult user + computer HTML | [ ] |
-
-## E28
-
-| ID | Máy/người dùng | Minh chứng cần thu | Kết quả kỳ vọng | Đã kiểm tra |
-|---|---|---|---|---|
-| 27 | RSoP | PC-HR-01 | gpresult user + computer HTML | [ ] |
-
-## E29
-
-| ID | Máy/người dùng | Minh chứng cần thu | Kết quả kỳ vọng | Đã kiểm tra |
-|---|---|---|---|---|
-| 28 | Diagnostic | PC-SAL-01 before | Sai OU + gpresult + registry | [ ] |
-
-## E30
-
-| ID | Máy/người dùng | Minh chứng cần thu | Kết quả kỳ vọng | Đã kiểm tra |
-|---|---|---|---|---|
-| 29 | Diagnostic | PC-SAL-01 after | Dung OU + gpresult + registry | [ ] |
-
-## E31
-
-| ID | Máy/người dùng | Minh chứng cần thu | Kết quả kỳ vọng | Đã kiểm tra |
-|---|---|---|---|---|
-| 30 | Video | 5 VMs | Video chung minh 5-8 phut | [ ] |
+| E31 | 5 VMs | Video chung minh 5-8 phut | day du cac muc chinh | [ ] |
 
 ## Quy tắc lưu minh chứng
 
