@@ -11,9 +11,12 @@
 - Sơ đồ: `SERVERA=10.0.0.1`, `SERVERB=10.0.0.2`, `PC-SAL-01`, `PC-ACC-01`, `PC-HR-01`; DNS/AD domain là `fittdtu.com`. Client minh họa dùng IP `10.0.0.11/12/13`, gateway không bắt buộc trong host-only LAN.
 - Domain NetBIOS **đề xuất** `FITTDTU`. Lấy giá trị thực bằng `(Get-ADDomain).NetBIOSName` hoặc `$env:USERDOMAIN`, **không mặc định tên NetBIOS đã là FITTDTU**.
 - Tài khoản demo: `sales01`, `acc01`, `hr01`. Chỉ đăng nhập tài khoản đúng phòng ban trên PC tương ứng.
-- Snapshot VM trước bước áp GPO và bước mô phỏng lỗi. VM Server 2012 R2 chỉ dùng LAN ảo cô lập, không đưa lên Internet (hết ESU 13/10/2026).
+- Snapshot VM trước bước áp GPO và bước mô phỏng lỗi; **không hoàn nguyên riêng SERVERA/Domain Controller tùy tiện** khi domain member đã thay đổi trạng thái. VM Server 2012 R2 chỉ dùng LAN ảo cô lập, không đưa lên Internet (hết ESU 13/10/2026).
 
 ## 1. Preflight: 5 VM và domain
+
+**Quy ước với TV1:** kiểm tra RAM/dung lượng SSD và dung lượng snapshot trên máy host. Với 16 GB RAM host, ưu tiên chạy SERVERA + SERVERB + từng client để kiểm thử luân phiên nếu cả 5 VM cùng bật gây thiếu RAM; phân bổ Windows 10 đầy đủ nên từ khoảng 2 GB/client nếu phần cứng cho phép. Kiểm tra đồng bộ thời gian bằng `w32tm /query /status` để tránh lỗi xác thực Kerberos do lệch giờ.
+
 
 **Trên SERVERA (PowerShell quản trị):**
 ```powershell
@@ -59,7 +62,7 @@ SERVERA tự khởi động lại. Trên SERVERB/client trỏ DNS về SERVERA t
 ```powershell
 Add-Computer -DomainName 'fittdtu.com' -Credential (Get-Credential) -Restart
 ```
-Nhập tài khoản domain admin khi được hỏi. Nếu giao diện client Windows 10/11 Home thì không hỗ trợ domain join; dùng Pro/Enterprise/Education. Với hệ thống đã dựng đầy đủ, **bỏ qua nhánh bootstrap**.
+Nhập tài khoản domain admin khi được hỏi. Dùng **Windows 10 Pro/Enterprise/Education chính thức và đồng nhất cho cả ba client**; tránh Windows 7 vì không hỗ trợ chính sách Machine inactivity limit theo đề và tránh bản Windows Lite tùy biến. Windows 10/11 Home không hỗ trợ domain join. Với hệ thống đã dựng đầy đủ, **bỏ qua nhánh bootstrap**.
 
 ## 2. Chạy script dựng OU, group, GPO khung trên SERVERA
 
@@ -271,7 +274,7 @@ mkdir C:\P07_Evidence_Admin
 gpresult /scope computer /r > C:\P07_Evidence_Admin\Computer_RSoP.txt
 gpresult /scope computer /h C:\P07_Evidence_Admin\Computer_RSoP.html /f
 ```
-Chụp tên GPO Applied và Denied. Nếu `gpresult /h` lỗi do quyền thì tạo riêng user/computer theo scope thay vì nhầm kết quả admin là kết quả user demo.
+Chụp danh sách Applied và Denied nếu có. **GPO 5 phút nằm ngoài phạm vi OU có thể không xuất hiện trong mục Denied**, vì không nằm trong phạm vi xử lý; không được tự suy diễn kết quả Denied. Nếu `gpresult /h` lỗi do quyền thì tạo riêng user/computer theo scope thay vì nhầm kết quả admin là kết quả user demo.
 
 **Trên SERVERA: Group Policy Results:**
 1. GPMC > `Group Policy Results` > click phải `Group Policy Results Wizard`.
