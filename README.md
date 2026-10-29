@@ -6,6 +6,9 @@ Kho tài liệu triển khai kỹ thuật cho môn **Quản trị hệ thống m
 
 ## Bắt đầu từ đâu?
 
+**[Đối chiếu kế hoạch thành viên 1 với đề và runbook](docs/doi-chieu-ke-hoach-thanh-vien-1.md)** — các sai lệch, mức độ ưu tiên và nội dung cần thống nhất trước khi dựng VM.
+
+
 1. **[Hướng dẫn triển khai từ A–Z](docs/huong-dan-thuc-hanh.md)** — thứ tự thao tác trên SERVERA, SERVERB, ba client; thiết lập GPO trong GPMC; kiểm thử, chẩn đoán và mở rộng lên 200 PC.
 2. **[Checklist minh chứng](docs/checklist-minh-chung.md)** — các màn hình và kết quả cần chụp/quay để chuyển cho thành viên 3. Có [bản CSV](docs/checklist-minh-chung.csv) để theo dõi.
 3. **[Kịch bản bảo vệ — thành viên 2](docs/kich-ban-bao-ve.md)** — lời trình bày kỹ thuật, thứ tự demo và cách giải thích kết quả.
