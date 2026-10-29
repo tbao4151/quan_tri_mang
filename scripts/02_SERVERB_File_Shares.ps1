@@ -2,7 +2,8 @@
 # P07 - Run ON SERVERB in elevated PowerShell, signed in as a domain account with local admin rights.
 # Preconditions: SERVERB has joined fittdtu.com; domain groups already exist on SERVERA.
 # Creates directories under C:\DeptShares (change $base if using a dedicated D: volume).
-# DO NOT use on existing production file shares. First run creates share ACLs.
+# DO NOT use on production file shares. Refuses to modify an existing folder/share.
+# Rerunning after completion will intentionally stop: verify settings with Get-SmbShareAccess and icacls.
 $ErrorActionPreference = 'Stop'
 $expectedDomain = 'fittdtu.com'
 if (-not ((Get-WmiObject Win32_ComputerSystem).Domain -ieq $expectedDomain)) {
@@ -19,6 +20,13 @@ $specs = @(
 )
 foreach ($spec in $specs) {
     $path = Join-Path $base $spec.Name
+    # Refuse to touch existing folders/shares: explicit NTFS ACEs may grant unwanted rights.
+    if (Test-Path -LiteralPath $path) {
+        throw "Folder $path exists: inspect existing ACLs and contents manually. No changes were made."
+    }
+    if (Get-SmbShare -Name $spec.Name -ErrorAction SilentlyContinue) {
+        throw "Share $($spec.Name) exists: inspect its path/permissions manually. No changes were made."
+    }
     New-Item -ItemType Directory -Path $path -Force | Out-Null
     $group = "$netbios\$($spec.Group)"
     # Block inherited NTFS ACEs: keep SYSTEM + BUILTIN Administrators + relevant department only.
@@ -31,12 +39,16 @@ foreach ($spec in $specs) {
     $sample = Join-Path $path $spec.File
     if (-not (Test-Path $sample)) { Set-Content -Path $sample -Value $spec.Text -Encoding UTF8 }
 
-    if (-not (Get-SmbShare -Name $spec.Name -ErrorAction SilentlyContinue)) {
-        New-SmbShare -Name $spec.Name -Path $path -ChangeAccess $group `
-            -FullAccess 'BUILTIN\Administrators' -CachingMode None | Out-Null
-        Write-Host "Created \\SERVERB\$($spec.Name)"
-    } else {
-        Write-Warning "Share $($spec.Name) exists. Review its existing Share ACL manually; script will not overwrite it."
+    New-SmbShare -Name $spec.Name -Path $path -ChangeAccess $group `
+        -FullAccess 'BUILTIN\Administrators' -CachingMode None | Out-Null
+    Write-Host "Created \\SERVERB\$($spec.Name)"
+    $unsafeAccounts = @('Everyone', 'NT AUTHORITY\Authenticated Users',
+                        'BUILTIN\Users', "$netbios\Domain Users")
+    $badAces = @(Get-SmbShareAccess -Name $spec.Name | Where-Object {
+        $_.AccessControlType -eq 'Allow' -and $_.AccountName -in $unsafeAccounts
+    })
+    if ($badAces.Count -gt 0) {
+        throw "Unsafe broad Share ACL on $($spec.Name): $($badAces.AccountName -join ', '). Inspect manually."
     }
     Write-Host "`nNTFS for $path:"
     & icacls.exe $path
