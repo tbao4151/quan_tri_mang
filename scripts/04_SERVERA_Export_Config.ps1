@@ -5,6 +5,7 @@ Import-Module ActiveDirectory
 Import-Module GroupPolicy
 $folder = 'C:\P07_ServerA_Evidence'
 New-Item -Path $folder -ItemType Directory -Force | Out-Null
+if ($env:COMPUTERNAME -ine 'SERVERA') { throw 'Run on SERVERA only.' }
 $root = (Get-ADDomain).DistinguishedName
 
 Get-ADOrganizationalUnit -Filter * -SearchBase $root |
@@ -18,7 +19,7 @@ foreach ($g in 'GG_Sales_RW','GG_Accounting_RW','GG_HR_Users') {
 }
 Get-ADComputer -Filter 'Name -like "PC-*"' -Properties DistinguishedName |
     Select-Object Name,DistinguishedName | Export-Csv "$folder\03_PC_OU.csv" -NoTypeInformation -Encoding UTF8
-Get-ADUser -Filter 'SamAccountName -eq "sales01" -or SamAccountName -eq "acc01" -or SamAccountName -eq "hr01"' |
+Get-ADUser -Filter 'SamAccountName -eq "user_sales" -or SamAccountName -eq "user_acc" -or SamAccountName -eq "user_hr"' |
     Select-Object SamAccountName,DistinguishedName | Export-Csv "$folder\04_Users_OU.csv" -NoTypeInformation -Encoding UTF8
 foreach ($n in 'P07_Lock_15m','P07_Lock_5m','P07_Restrict_ControlPanel','P07_Map_SalesDocs','P07_Map_AccountingDocs') {
     if (Get-GPO -Name $n -ErrorAction SilentlyContinue) {
