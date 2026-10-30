@@ -1,7 +1,7 @@
 #requires -RunAsAdministrator
 # P07 - Run ON SERVERB in elevated PowerShell, signed in as a domain account with local admin rights.
 # Preconditions: SERVERB has joined fittdtu.com; domain groups already exist on SERVERA.
-# Creates directories under C:\DeptShares (change $base if using a dedicated D: volume).
+# Creates directories under C:\Shares (change $base if using a dedicated D: volume).
 # DO NOT use on production file shares. Refuses to modify an existing folder/share.
 # Rerunning after completion will intentionally stop: verify settings with Get-SmbShareAccess and icacls.
 $ErrorActionPreference = 'Stop'
@@ -13,7 +13,8 @@ $netbios = $env:USERDOMAIN
 if ($netbios -eq $env:COMPUTERNAME) {
     throw 'Sign in using a DOMAIN administrator, not a local administrator.'
 }
-$base = 'C:\DeptShares'
+if ($env:COMPUTERNAME -ine 'SERVERB') { throw 'Run this script on SERVERB only.' }
+$base = 'C:\Shares'
 $specs = @(
     @{Name='SalesDocs';      Group='GG_Sales_RW';      File='KeHoach_Sales.txt';      Text='Ke hoach Sales - TDTU P07'},
     @{Name='AccountingDocs'; Group='GG_Accounting_RW'; File='BaoCao_Accounting.txt'; Text='Bao cao Accounting - TDTU P07'}
