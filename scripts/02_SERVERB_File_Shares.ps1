@@ -53,7 +53,7 @@ foreach ($spec in $specs) {
     if ($badAces.Count -gt 0) {
         throw "Unsafe broad Share ACL on $($spec.Name): $($badAces.AccountName -join ', '). Inspect manually."
     }
-    Write-Host "`nNTFS for $path:"
+    Write-Host "`nNTFS for ${path}:"
     & icacls.exe $path
     Write-Host "Share permissions for $($spec.Name):"
     Get-SmbShareAccess -Name $spec.Name | Format-Table -AutoSize
