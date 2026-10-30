@@ -1,19 +1,21 @@
-# TDTU – Đồ án 07: Runbook kỹ thuật cho thành viên 2
+# TDTU – Đồ án 07: Runbook kỹ thuật thực hành (TV1 chạy, TV2 hướng dẫn)
 
 **Nguồn yêu cầu:** `Do_an_07_GPO_Starter_GPO_File_Sharing_fittdtu.com.pdf` (2 trang).  
-**Giả định:** 5 VM đã được cài đặt, cùng mạng LAN ảo, có quyền quản trị. Các lệnh chạy trong Windows PowerShell của máy được chỉ rõ, không chạy trên laptop host.  
-**Trạng thái:** Đây là quy trình và mã nguồn đề xuất, **chưa được chạy/kiểm chứng trên 5 VM thực tế**.
+**Hạ tầng theo biên bản TV1:** 5 VM trên VMware Workstation Pro đã join domain `fittdtu.com` (SERVERA + SERVERB + 3 client), LAN Segment `LAN_DoAn07`. Không dựng lại forest, không chạy lại domain join. Mỗi lệnh chỉ chạy trên VM được chỉ định.  
+**Trạng thái:** Hạ tầng được TV1 khai báo là đã hoàn tất; các bước OU/GPO/Share/kiểm chứng vẫn **chưa có bằng chứng chạy thực tế**. Bắt đầu tại [bản bàn giao thao tác TV1](ban-giao-thuc-thi-thanh-vien-1.md).
 
 ## 0. Phân công & quy ước
 - TV1: cài/duy trì 5 VM, thực thi đúng lệnh trên từng VM, chụp màn hình và quay video. Không thay đổi thiết lập/đổi tên tùy ý.
 - TV2: đối chiếu yêu cầu, điều phối đúng thứ tự, cấu hình OU/GPO/NTFS, đọc `gpresult`, lập ma trận kiểm thử, chủ trì giải thích bảo vệ.
 - TV3: đưa minh chứng thật của TV1 vào báo cáo và slide. Không tạo hình kết quả giả.
 - Sơ đồ: `SERVERA=10.0.0.1`, `SERVERB=10.0.0.2`, `PC-SAL-01`, `PC-ACC-01`, `PC-HR-01`; DNS/AD domain là `fittdtu.com`. Client minh họa dùng IP `10.0.0.11/12/13`, gateway không bắt buộc trong host-only LAN.
-- Domain NetBIOS **đề xuất** `FITTDTU`. Lấy giá trị thực bằng `(Get-ADDomain).NetBIOSName` hoặc `$env:USERDOMAIN`, **không mặc định tên NetBIOS đã là FITTDTU**.
-- Tài khoản demo: `sales01`, `acc01`, `hr01`. Chỉ đăng nhập tài khoản đúng phòng ban trên PC tương ứng.
+- Domain NetBIOS **TV1 khai báo** `FITTDTI` (chữ cuối I). Kiểm tra trên SERVERA bằng `(Get-ADDomain).NetBIOSName`, không đổi domain hoặc tự mặc định là `FITTDTU`.
+- Tài khoản demo: `user_sales`, `user_acc`, `user_hr`; script 01 tạo ba tài khoản này với **mật khẩu lab `P07Lab@2026!`** (chỉ dùng tài khoản user thường, không phải admin). Đăng nhập đúng user trên PC tương ứng.
 - Snapshot VM trước bước áp GPO và bước mô phỏng lỗi; **không hoàn nguyên riêng SERVERA/Domain Controller tùy tiện** khi domain member đã thay đổi trạng thái. VM Server 2012 R2 chỉ dùng LAN ảo cô lập, không đưa lên Internet (hết ESU 13/10/2026).
 
-## 1. Preflight: 5 VM và domain
+## 1. Xác nhận nhanh 5 VM và domain
+
+TV1 có thể chạy [script 00 (chỉ đọc)](../scripts/00_Preflight_5VM.ps1) trên 5 máy để xuất file TXT minh chứng; không cần coi các điểm tối ưu bảo mật (gateway, DNS loopback, thay đổi mật khẩu lab) là điều kiện chặn tiến độ. Kiểm tra kỹ thuật cần tập trung vào kết nối domain thực tế.
 
 **Quy ước với TV1:** kiểm tra RAM/dung lượng SSD và dung lượng snapshot trên máy host. Với 16 GB RAM host, ưu tiên chạy SERVERA + SERVERB + từng client để kiểm thử luân phiên nếu cả 5 VM cùng bật gây thiếu RAM; phân bổ Windows 10 đầy đủ nên từ khoảng 2 GB/client nếu phần cứng cho phép. Kiểm tra đồng bộ thời gian bằng `w32tm /query /status` để tránh lỗi xác thực Kerberos do lệch giờ.
 
@@ -52,17 +54,7 @@ Test-ComputerSecureChannel
 ```
 Kết quả: DNS duy nhất/ưu tiên `10.0.0.1`, domain `fittdtu.com`, đều tìm được domain controller. ICMP có thể bị chặn bởi Windows Firewall; nếu `ping` thất bại nhưng DNS/AD chạy, xem firewall/network profile.
 
-**Nếu domain chưa được tạo** (chỉ thực hiện 1 lần trên SERVERA, không chạy lại nếu đã có AD):
-```powershell
-Install-WindowsFeature AD-Domain-Services,DNS -IncludeManagementTools
-Install-ADDSForest -DomainName 'fittdtu.com' -DomainNetbiosName 'FITTDTU' `
-  -InstallDNS -SafeModeAdministratorPassword (Read-Host 'DSRM password' -AsSecureString) -Force
-```
-SERVERA tự khởi động lại. Trên SERVERB/client trỏ DNS về SERVERA trước khi join domain. Mỗi máy sử dụng PowerShell nâng quyền:
-```powershell
-Add-Computer -DomainName 'fittdtu.com' -Credential (Get-Credential) -Restart
-```
-Nhập tài khoản domain admin khi được hỏi. Dùng **Windows 10 Pro/Enterprise/Education chính thức và đồng nhất cho cả ba client**; tránh Windows 7 vì không hỗ trợ chính sách Machine inactivity limit theo đề và tránh bản Windows Lite tùy biến. Windows 10/11 Home không hỗ trợ domain join. Với hệ thống đã dựng đầy đủ, **bỏ qua nhánh bootstrap**.
+**Hạ tầng đã bàn giao:** Không chạy `Install-ADDSForest` hoặc `Add-Computer` trên 5 VM hiện tại. Nếu `nslookup` hoặc secure channel lỗi, chụp màn hình chuyển cho TV2 xử lý, không tự dựng domain khác.
 
 ## 2. Chạy script dựng OU, group, GPO khung trên SERVERA
 
@@ -70,7 +62,7 @@ Nhập tài khoản domain admin khi được hỏi. Dùng **Windows 10 Pro/Ente
 ```powershell
 Install-WindowsFeature GPMC
 ```
-Lưu/copy `Scripts/01_SERVERA_AD_OU_Groups_GPO.ps1` sang SERVERA và chạy:
+Lưu/copy `scripts/01_SERVERA_AD_OU_Groups_GPO.ps1` sang SERVERA và chạy:
 ```powershell
 Set-ExecutionPolicy -Scope Process Bypass -Force
 .\01_SERVERA_AD_OU_Groups_GPO.ps1
@@ -87,17 +79,17 @@ Kiểm tra trực quan: `Server Manager > Tools > Active Directory Users and Com
 ```text
 fittdtu.com
 ├── Employees
-│   ├── Sales         └── sales01
-│   ├── Accounting    └── acc01
-│   └── HR            └── hr01
+│   ├── Sales         └── user_sales
+│   ├── Accounting    └── user_acc
+│   └── HR            └── user_hr
 ├── Workstations
 │   ├── Sales         └── PC-SAL-01
 │   ├── Accounting    └── PC-ACC-01
 │   └── HR            └── PC-HR-01
 └── Groups
-    ├── GG_Sales_RW        (sales01)
-    ├── GG_Accounting_RW   (acc01)
-    └── GG_HR_Users        (hr01)
+    ├── GG_Sales_RW        (user_sales)
+    ├── GG_Accounting_RW   (user_acc)
+    └── GG_HR_Users        (user_hr)
 ```
 Lệnh kiểm tra:
 ```powershell
@@ -168,15 +160,15 @@ logoff
 
 ## 5. ServerB: hai folder, Share và NTFS
 
-**Trên SERVERB:** đăng nhập **domain admin**, Run PowerShell as Administrator. Chép `Scripts/02_SERVERB_File_Shares.ps1` và chạy:
+**Trên SERVERB:** đăng nhập **domain admin**, Run PowerShell as Administrator. Chép `scripts/02_SERVERB_File_Shares.ps1` và chạy:
 ```powershell
 Set-ExecutionPolicy -Scope Process Bypass -Force
 .\02_SERVERB_File_Shares.ps1
 ```
 Thư mục/tệp được tạo (ở C: trong ví dụ; có thể đổi `$base` thành D: nếu có ổ dữ liệu):
 ```text
-C:\DeptShares\SalesDocs\KeHoach_Sales.txt
-C:\DeptShares\AccountingDocs\BaoCao_Accounting.txt
+C:\Shares\SalesDocs\KeHoach_Sales.txt
+C:\Shares\AccountingDocs\BaoCao_Accounting.txt
 ```
 Share UNC:
 ```text
@@ -198,8 +190,8 @@ Không cấp quyền cho nhóm chéo, `Everyone` hoặc `Authenticated Users` tr
 Get-SmbShare -Name SalesDocs,AccountingDocs | Select Name,Path
 Get-SmbShareAccess -Name SalesDocs
 Get-SmbShareAccess -Name AccountingDocs
-icacls C:\DeptShares\SalesDocs
-icacls C:\DeptShares\AccountingDocs
+icacls C:\Shares\SalesDocs
+icacls C:\Shares\AccountingDocs
 ```
 Ảnh quan trọng: `Sharing/Permissions` và `Security` của **cả hai folder**.
 
@@ -228,7 +220,7 @@ Nếu đổi OU/user để làm demo mà thấy ổ cũ còn tồn tại, đăng
 
 ## 7. Ma trận 9 kiểm thử UNC độc lập với ánh xạ ổ
 
-**Trên PC Sales, đăng nhập `sales01`:**
+**Trên PC Sales, đăng nhập `user_sales`:**
 ```cmd
 whoami
 net use
@@ -238,7 +230,7 @@ echo Sales test > \\SERVERB\SalesDocs\KiemThu_Sales.txt
 ```
 Kỳ vọng: `S:` có; đọc SalesDocs và ghi tệp được; `dir \\SERVERB\AccountingDocs` bị `Access is denied`.
 
-**Trên PC Accounting, đăng nhập `acc01`:**
+**Trên PC Accounting, đăng nhập `user_acc`:**
 ```cmd
 whoami
 net use
@@ -248,7 +240,7 @@ echo Accounting test > \\SERVERB\AccountingDocs\KiemThu_Accounting.txt
 ```
 Kỳ vọng: `A:` có; đọc/ghi AccountingDocs được; SalesDocs bị từ chối.
 
-**Trên PC HR, đăng nhập `hr01`:**
+**Trên PC HR, đăng nhập `user_hr`:**
 ```cmd
 whoami
 net use
@@ -261,7 +253,7 @@ Tránh lỗi 1219 nhiều tài khoản SMB: đừng đăng nhập `\\SERVERB` b�
 
 ## 8. Thu thập gpresult / Group Policy Results
 
-**Trên từng client khi đã login `sales01`/`acc01`/`hr01`:**
+**Trên từng client khi đã login `user_sales`/`user_acc`/`user_hr`:**
 ```powershell
 Set-ExecutionPolicy -Scope Process Bypass -Force
 .\03_CLIENT_Evidence.ps1
@@ -278,8 +270,8 @@ Chụp danh sách Applied và Denied nếu có. **GPO 5 phút nằm ngoài phạ
 
 **Trên SERVERA: Group Policy Results:**
 1. GPMC > `Group Policy Results` > click phải `Group Policy Results Wizard`.
-2. Select computer `PC-SAL-01`, select user `sales01` > Finish; xem `Summary/Settings`.
-3. Làm tương tự `PC-ACC-01/acc01`, `PC-HR-01/hr01`.
+2. Select computer `PC-SAL-01`, select user `user_sales` > Finish; xem `Summary/Settings`.
+3. Làm tương tự `PC-ACC-01/user_acc`, `PC-HR-01/user_hr`.
 4. Nếu wizard không truy cập từ xa, ưu tiên `gpresult /h` chạy trực tiếp trên client và kiểm tra firewall/RPC/WMI. Không dùng báo cáo cũ để giả định đã áp xong.
 
 **Lệnh lưu cấu hình SERVERA** (độc lập với RSoP):
@@ -300,7 +292,7 @@ Get-ADComputer PC-SAL-01 | Select Name,DistinguishedName
 Move-ADObject -Identity (Get-ADComputer PC-SAL-01).DistinguishedName `
   -TargetPath "OU=HR,OU=Workstations,$dn"
 ```
-**Trên PC-SAL-01:** `gpupdate /force`, khởi động lại, login `sales01`, xem `gpresult /scope computer /r` và `reg query ... InactivityTimeoutSecs`. Kỳ vọng **900** do PC bị đặt trong Workstations/HR. `sales01` vẫn thuộc Employees/Sales, vì vậy Control Panel vẫn bị chặn và S: vẫn có; đây là minh chứng rõ chính sách máy/người dùng tách biệt.
+**Trên PC-SAL-01:** `gpupdate /force`, khởi động lại, login `user_sales`, xem `gpresult /scope computer /r` và `reg query ... InactivityTimeoutSecs`. Kỳ vọng **900** do PC bị đặt trong Workstations/HR. `user_sales` vẫn thuộc Employees/Sales, vì vậy Control Panel vẫn bị chặn và S: vẫn có; đây là minh chứng rõ chính sách máy/người dùng tách biệt.
 
 **Sửa trên SERVERA:**
 ```powershell
@@ -321,7 +313,7 @@ Move-ADObject -Identity (Get-ADComputer PC-SAL-01).DistinguishedName `
 | HR bị chặn Control Panel | Link restriction ở domain/Employees cha? | Gỡ link sai; chỉ link `Employees/Sales` và `Employees/Accounting` |
 | S:/A: không xuất hiện | `net use`, `gpresult /scope user /r`, Drive Maps item, UNC DNS | Kiểm tra User Configuration/Drive Maps, location và letter, login đúng user, gpupdate+logoff |
 | Ổ có nhưng không ghi được | `Get-SmbShareAccess`, `icacls`, thử `echo > UNC` | Kiểm tra **cả Share và NTFS**; quyền hiệu lực bị giới hạn bởi tầng hạn chế hơn |
-| HR vẫn đọc được SalesDocs | Share/NTFS có `Everyone`, Domain Users, Authenticated Users? | Loại bỏ ACE quá rộng ở thư mục bộ phận; bảo đảm test bằng hr01 không phải admin |
+| HR vẫn đọc được SalesDocs | Share/NTFS có `Everyone`, Domain Users, Authenticated Users? | Loại bỏ ACE quá rộng ở thư mục bộ phận; bảo đảm test bằng user_hr không phải admin |
 | GPMC Group Policy Results lỗi từ xa | local `gpresult /h`, RPC/WMI/firewall | Lấy HTML local trước; xử lý remote permissions / firewall sau |
 | Registry đúng nhưng khóa sớm | Screen saver / display sleep | Tách nguyên nhân từ power settings/screen saver; đo thực tế, không quy chụp GPO sai |
 | Access denied bất thường do SMB session | `net use`, `whoami` | Thử lại bằng đúng user, không dùng phiên mạng đã lưu credential admin |
@@ -329,7 +321,7 @@ Move-ADObject -Identity (Get-ADComputer PC-SAL-01).DistinguishedName `
 ## 11. Bảng mở rộng doanh nghiệp 200 PC
 
 - Đặt tên nhất quán: `PC-SAL-001..N`, `PC-ACC-001..N`, `PC-HR-001..N` (môi trường mẫu theo đề có tên `PC-SAL-01` v.v.). Các số lượng phòng ban **chưa được đề ấn định**; có thể minh họa kịch bản Sales=80, Accounting=70, HR=50, tổng=200, và đánh dấu **giả định thiết kế** chứ không nói là yêu cầu đề.
-- User naming: `sal.<maNV>`, `acc.<maNV>`, `hr.<maNV>` cho mở rộng, nhóm demo vẫn là `sales01`, `acc01`, `hr01`.
+- User naming: `sal.<maNV>`, `acc.<maNV>`, `hr.<maNV>` cho mở rộng, nhóm demo vẫn là `user_sales`, `user_acc`, `user_hr`.
 - Khi thêm PC: domain join → move AD computer object tới `Workstations/<phong>` → `gpupdate /force` → reboot → đọc RSoP.
 - Khi thêm user: tạo trong `Employees/<phong>` → vào group bộ phận → login → kiểm tra mapping/NTFS.
 - Giữ 1 GPO 300 giây dùng lại cho Sales & Accounting thay vì tạo 200 GPO. Từ OU cha có thể mở rộng chính sách chung mà không cấu hình từng PC. Nếu di chuyển phòng ban cần cập nhật **cả user và computer**, tùy trường hợp.
@@ -370,7 +362,7 @@ Không cắt ghép để làm như khóa máy diễn ra ngay; có thể tua đo�
 
 **Q8. Vì sao `gpupdate /force` chưa đủ với khóa phiên?** Chính sách security này có thể cần restart để hiệu lực, và RSoP/registry phải được kiểm lại sau restart; `gpupdate` chỉ yêu cầu client xử lý lại chính sách.
 
-**Q9. Nếu PC Sales bị đưa vào OU HR nhưng user sales01 vẫn ở Sales, điều gì xảy ra?** Lock computer chuyển từ 300 thành 900; restriction Control Panel và drive S: vẫn chịu cấu hình user Sales. Đây là minh họa độc lập Computer/User policy.
+**Q9. Nếu PC Sales bị đưa vào OU HR nhưng user user_sales vẫn ở Sales, điều gì xảy ra?** Lock computer chuyển từ 300 thành 900; restriction Control Panel và drive S: vẫn chịu cấu hình user Sales. Đây là minh họa độc lập Computer/User policy.
 
 **Q10. Mở rộng 200 PC có phải tạo 200 GPO?** Không. Cấu hình theo OU và scope; máy/user mới thêm đúng OU và nhóm sẽ nhận chính sách. Cần quy trình kiểm chứng định kỳ bằng RSoP và kiểm soát các ngoại lệ.
 
