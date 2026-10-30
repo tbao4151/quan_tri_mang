@@ -2,7 +2,7 @@
 
 Kho tài liệu triển khai kỹ thuật cho môn **Quản trị hệ thống mạng** (Tôn Đức Thắng University), tập trung vào công việc của **thành viên 2**: thiết kế và cung cấp thao tác/lệnh để thành viên 1 chạy lab, kiểm thử, thu thập bằng chứng và trình bày trước giảng viên.
 
-> **Trạng thái:** Runbook và script tham khảo, **chưa được chạy/kiểm chứng trên 5 máy ảo thực tế**. Chỉ dùng trong lab cô lập. Không đưa mật khẩu, ảnh có thông tin nhạy cảm hoặc file cấu hình thật lên repository công khai.
+> **Trạng thái:** Runbook và script tham khảo, **chưa được chạy/kiểm chứng trên 5 máy ảo thực tế**. Chỉ dùng trong lab VMware LAN Segment cô lập; không yêu cầu hardening ngoài rubric. Script 01 dùng mật khẩu demo cố định cho 3 tài khoản user thường.
 
 ## Bắt đầu từ đâu?
 
