@@ -6,6 +6,8 @@ Kho tài liệu triển khai kỹ thuật cho môn **Quản trị hệ thống m
 
 ## Bắt đầu từ đâu?
 
+**[Biên bản tiếp nhận hạ tầng 30/10/2026 — kiểm tra & xử lý sai lệch](docs/kiem-tra-ban-giao-ha-tang-2026-10-30.md)** — xem trước khi chạy bất cứ script cấu hình nào. Dùng [script 00 — Preflight 5 VM](scripts/00_Preflight_5VM.ps1) để lấy minh chứng thực tế; tuyệt đối không đưa mật khẩu vào GitHub.
+
 **[Đối chiếu kế hoạch thành viên 1 với đề và runbook](docs/doi-chieu-ke-hoach-thanh-vien-1.md)** — các sai lệch, mức độ ưu tiên và nội dung cần thống nhất trước khi dựng VM.
 
 
@@ -38,7 +40,7 @@ Kho tài liệu triển khai kỹ thuật cho môn **Quản trị hệ thống m
 
 ## Thứ tự thực hiện
 
-1. Xác nhận 5 VM, kết nối DNS/domain, chụp snapshot.
+1. Trên 5 VM chạy [00 — kiểm tra preflight (read-only)](scripts/00_Preflight_5VM.ps1), xác minh DNS/domain/secure channel, xử lý mật khẩu đã lộ; kiểm tra snapshot.
 2. Chạy [01 — SERVERA: OU/group/user/GPO khung](scripts/01_SERVERA_AD_OU_Groups_GPO.ps1).
 3. Trong GPMC cấu hình `P07_Lock_15m`, `P07_Lock_5m`, `Starter_No_ControlPanel` → `P07_Restrict_ControlPanel`.
 4. Chạy [02 — SERVERB: NTFS và SMB share](scripts/02_SERVERB_File_Shares.ps1).
