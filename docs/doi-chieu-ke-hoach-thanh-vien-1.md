@@ -1,3 +1,5 @@
+> **Lưu bản đánh giá giai đoạn lập kế hoạch:** TV1 đã bàn giao 5 VM sau tài liệu này; tên user, thư mục và các bước thực thi được thống nhất mới nhất trong [Bàn giao thực thi TV1](ban-giao-thuc-thi-thanh-vien-1.md). Các khuyến nghị tăng cường an toàn trong bản này chỉ mang tính tham khảo cho lab, không chặn tiến độ đồ án.
+
 # Đối chiếu kế hoạch thành viên 1 với đề Đồ án 07 và runbook thành viên 2
 
 **Nguồn đối chiếu:** (1) đề giảng viên “Đồ án môn học số 7”, 2 trang; (2) tài liệu 6 trang do thành viên 1 chuyển (“Nhóm tôi có 3 thành viên và tôi là thành viên 1...”); (3) [runbook kỹ thuật thành viên 2](huong-dan-thuc-hanh.md).
@@ -16,7 +18,7 @@
 | Quan trọng | 1–2 | RAM 1536 MB cho mỗi Windows 10; 5 VM chạy đồng thời; không ghi dung lượng disk | 1536 MB có nguy cơ giật/không ổn định trên Windows 10 đầy đủ. Ưu tiên 2 GB/client khi có thể; để SERVERA+SERVERB chạy và kiểm thử **từng client luân phiên**. Kiểm tra dung lượng SSD và snapshot trước, không chỉ tính tổng RAM. |
 | Quan trọng | 2 | Giải thích clone chủ yếu do “trùng SID khiến GPO không áp dụng” | Sysprep /generalize **trước domain join** khi tạo template để loại thông tin định danh hệ thống; không quy tất cả lỗi GPO/domain join cho SID. Không clone VM đã domain-join rồi dùng đồng thời. |
 | Quan trọng | 2 | “Snapshot sau Join Domain, rollback tức thì” | Snapshot để phục hồi client/lab, nhưng không rollback **SERVERA (Domain Controller)** tùy tiện khi SERVERB/client tiếp tục hoạt động; cần quản lý nhất quán trạng thái domain. |
-| Quan trọng | 3–4 | Ảnh `gpresult /r` không chỉ rõ computer/user và account thực thi | Từ user phòng ban: `gpresult /scope user /r`. Từ CMD **Run as Administrator**: `gpresult /scope computer /r`. Nếu nâng quyền bằng tài khoản admin, **không dùng** kết quả user scope admin để chứng minh GPO của `sales01`. |
+| Quan trọng | 3–4 | Ảnh `gpresult /r` không chỉ rõ computer/user và account thực thi | Từ user phòng ban: `gpresult /scope user /r`. Từ CMD **Run as Administrator**: `gpresult /scope computer /r`. Nếu nâng quyền bằng tài khoản admin, **không dùng** kết quả user scope admin để chứng minh GPO của `user_sales`. |
 | Quan trọng | 4–5 | Chỉ minh chứng hiển thị ổ và thông báo “Access Denied” cố định | Chụp **hai tầng Share & NTFS** của cả hai share; xác minh bằng `whoami`, `net use`, `dir \\SERVERB\SalesDocs`, `dir \\SERVERB\AccountingDocs` và thao tác **ghi thật** bằng tài khoản đúng phòng ban. Thông báo từ chối có thể khác tùy Windows, không ép câu chữ. |
 | Quan trọng | 6 | Video 5–8 phút chỉ cho thấy giá trị 300/900 | Đo khóa thực tế: 5 phút Sales/ACC, 15 phút HR; lưu bản gốc hoặc mốc thời gian đủ kiểm chứng, sau đó biên tập **minh bạch** vào video 5–8 phút. Kiểm soát screen saver/display timeout để tránh khóa sớm. |
 | Bổ sung | 3–6 | Thiếu minh chứng kế hoạch mở rộng 200 PC | Thêm bảng quy tắc tên PC/user, OU đích, group đích, thao tác join domain → chuyển OU → kiểm thử; không cần tạo đủ 200 đối tượng. |
@@ -28,11 +30,11 @@
 
 | Client / tài khoản | Machine inactivity | Control Panel | GPP Drive Maps | SalesDocs UNC | AccountingDocs UNC |
 |---|---:|---|---|---|---|
-| PC-SAL-01 / sales01 | 300s | Chặn | S: | Đọc + ghi | Từ chối |
-| PC-ACC-01 / acc01 | 300s | Chặn | A: | Từ chối | Đọc + ghi |
-| PC-HR-01 / hr01 | 900s | Cho phép | Không có S:/A: | Từ chối | Từ chối |
+| PC-SAL-01 / user_sales | 300s | Chặn | S: | Đọc + ghi | Từ chối |
+| PC-ACC-01 / user_acc | 300s | Chặn | A: | Từ chối | Đọc + ghi |
+| PC-HR-01 / user_hr | 900s | Cho phép | Không có S:/A: | Từ chối | Từ chối |
 
-**Không nhầm 2 phạm vi:** inactivity policy = **Computer Configuration** theo OU **Workstations**; Control Panel + Drive Maps = **User Configuration** theo OU **Employees**. Chuyển riêng computer object PC-SAL-01 sang Workstations/HR sẽ đổi 300 → 900, nhưng *user* sales01 vẫn bị chặn Control Panel và nhận S:.
+**Không nhầm 2 phạm vi:** inactivity policy = **Computer Configuration** theo OU **Workstations**; Control Panel + Drive Maps = **User Configuration** theo OU **Employees**. Chuyển riêng computer object PC-SAL-01 sang Workstations/HR sẽ đổi 300 → 900, nhưng *user* user_sales vẫn bị chặn Control Panel và nhận S:.
 
 ## III. Bổ sung checklist cấu hình hạ tầng cho TV1
 
