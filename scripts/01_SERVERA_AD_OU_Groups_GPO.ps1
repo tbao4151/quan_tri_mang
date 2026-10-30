@@ -2,6 +2,7 @@
 # P07 - Run ON SERVERA, in an elevated Windows PowerShell session using a domain admin.
 # Prerequisite: fittdtu.com forest and DNS already exist; clients already joined when possible.
 # Safe to rerun: reuses existing OUs, users, groups, and GPOs.
+# Lab user accounts: user_sales/user_acc/user_hr; shared fixed password below for DEMO only.
 # This script does NOT configure Machine inactivity limit and does NOT create Starter GPO.
 # Those actions MUST be done in GPMC to demonstrate the correct assignment requirement.
 
@@ -9,10 +10,14 @@ $ErrorActionPreference = 'Stop'
 Import-Module ActiveDirectory
 Import-Module GroupPolicy
 $domain = Get-ADDomain
+if ($env:COMPUTERNAME -ine 'SERVERA') { throw 'Run this script on SERVERA only.' }
 if ($domain.DNSRoot -ne 'fittdtu.com') {
     throw "Expected domain fittdtu.com; detected $($domain.DNSRoot). Stop."
 }
 $root = $domain.DistinguishedName
+Write-Host "Domain: $($domain.DNSRoot), NetBIOS: $($domain.NetBIOSName)"
+$LabUserPassword = 'P07Lab@2026!' # Demo only, three NON-ADMIN department test accounts
+$LabUserPasswordSecure = ConvertTo-SecureString $LabUserPassword -AsPlainText -Force
 
 function Ensure-OU([string]$name, [string]$parent) {
     $dn = "OU=$name,$parent"
@@ -40,18 +45,17 @@ foreach ($groupName in @('GG_Sales_RW','GG_Accounting_RW','GG_HR_Users')) {
 }
 
 $users = @(
-    @{Sam='sales01'; Name='Sales Demo'; Dept='Sales'; Group='GG_Sales_RW'},
-    @{Sam='acc01';   Name='Accounting Demo'; Dept='Accounting'; Group='GG_Accounting_RW'},
-    @{Sam='hr01';    Name='HR Demo'; Dept='HR'; Group='GG_HR_Users'}
+    @{Sam='user_sales'; Name='Sales Demo'; Dept='Sales'; Group='GG_Sales_RW'},
+    @{Sam='user_acc';   Name='Accounting Demo'; Dept='Accounting'; Group='GG_Accounting_RW'},
+    @{Sam='user_hr';    Name='HR Demo'; Dept='HR'; Group='GG_HR_Users'}
 )
 foreach ($entry in $users) {
     $path = "OU=$($entry.Dept),$employees"
     $user = Get-ADUser -Identity $entry.Sam -ErrorAction SilentlyContinue
     if (-not $user) {
-        $password = Read-Host "Enter LAB password for $($entry.Sam) (strong password)" -AsSecureString
         New-ADUser -Name $entry.Name -SamAccountName $entry.Sam `
             -UserPrincipalName "$($entry.Sam)@fittdtu.com" -Path $path `
-            -AccountPassword $password -Enabled $true -ChangePasswordAtLogon $false `
+            -AccountPassword $LabUserPasswordSecure -Enabled $true -ChangePasswordAtLogon $false `
             -Department $entry.Dept | Out-Null
         Write-Host "Created user: $($entry.Sam)"
     } else {
@@ -106,4 +110,5 @@ foreach ($entry in $links) {
     }
 }
 Write-Host "`nAD OU / group / user / machine placement / GPO skeleton finished."
+Write-Host 'Lab test-user password (non-admin accounts): P07Lab@2026!'
 Write-Host 'NEXT: In GPMC set 900s/300s; create Starter GPO -> active GPO; set Drive Maps.'
