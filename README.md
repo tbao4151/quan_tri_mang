@@ -6,9 +6,13 @@ Kho tài liệu triển khai kỹ thuật cho môn **Quản trị hệ thống m
 
 ## Bắt đầu từ đâu?
 
-**[Biên bản tiếp nhận hạ tầng 30/10/2026 — kiểm tra & xử lý sai lệch](docs/kiem-tra-ban-giao-ha-tang-2026-10-30.md)** — xem trước khi chạy bất cứ script cấu hình nào. Dùng [script 00 — Preflight 5 VM](scripts/00_Preflight_5VM.ps1) để lấy minh chứng thực tế; tuyệt đối không đưa mật khẩu vào GitHub.
+**DÀNH CHO THÀNH VIÊN 1: [MỞ HƯỚNG DẪN THỰC THI TỪ ĐẦU ĐẾN CUỐI](docs/ban-giao-thuc-thi-thanh-vien-1.md)** — đã đồng bộ với biên bản giao 5 VM; tập trung thao tác copy-paste và các ảnh cần chụp.
 
-**[Đối chiếu kế hoạch thành viên 1 với đề và runbook](docs/doi-chieu-ke-hoach-thanh-vien-1.md)** — các sai lệch, mức độ ưu tiên và nội dung cần thống nhất trước khi dựng VM.
+**Bộ tài khoản kiểm thử:** `user_sales`, `user_acc`, `user_hr`; mật khẩu ba user thường do script 01 tạo là `P07Lab@2026!`. NetBIOS TV1 báo là `FITTDTI` (xác nhận trên SERVERA), data path `C:\Shares`.
+
+**[Biên bản tiếp nhận hạ tầng 30/10/2026](docs/kiem-tra-ban-giao-ha-tang-2026-10-30.md)** — mô tả thông số 5 VM và điều kiện kỹ thuật; [script 00 — kiểm tra 5 VM](scripts/00_Preflight_5VM.ps1) chỉ đọc và xuất log để làm minh chứng.
+
+**[Đánh giá kế hoạch TV1 (bản lưu)](docs/doi-chieu-ke-hoach-thanh-vien-1.md)** — phân tích từ giai đoạn trước khi TV1 bàn giao; tên người dùng và đường dẫn chuẩn đã được chốt trong tài liệu thực thi mới.
 
 
 1. **[Hướng dẫn triển khai từ A–Z](docs/huong-dan-thuc-hanh.md)** — thứ tự thao tác trên SERVERA, SERVERB, ba client; thiết lập GPO trong GPMC; kiểm thử, chẩn đoán và mở rộng lên 200 PC.
@@ -22,9 +26,9 @@ Kho tài liệu triển khai kỹ thuật cho môn **Quản trị hệ thống m
 |---|---|---|
 | SERVERA | Windows Server 2012 R2, AD DS, DNS, quản trị GPO, domain `fittdtu.com` | `10.0.0.1/24` |
 | SERVERB | Domain member, file server SMB | `10.0.0.2/24` |
-| PC-SAL-01 | Client Sales, user `sales01` | IP LAN ảo |
-| PC-ACC-01 | Client Accounting, user `acc01` | IP LAN ảo |
-| PC-HR-01 | Client HR, user `hr01` | IP LAN ảo |
+| PC-SAL-01 | Client Sales, user `user_sales` | IP LAN ảo |
+| PC-ACC-01 | Client Accounting, user `user_acc` | IP LAN ảo |
+| PC-HR-01 | Client HR, user `user_hr` | IP LAN ảo |
 
 ### Ma trận nghiệm thu
 
@@ -40,7 +44,7 @@ Kho tài liệu triển khai kỹ thuật cho môn **Quản trị hệ thống m
 
 ## Thứ tự thực hiện
 
-1. Trên 5 VM chạy [00 — kiểm tra preflight (read-only)](scripts/00_Preflight_5VM.ps1), xác minh DNS/domain/secure channel, xử lý mật khẩu đã lộ; kiểm tra snapshot.
+1. Trên 5 VM chạy [00 — kiểm tra preflight (read-only)](scripts/00_Preflight_5VM.ps1), xác minh DNS/domain/secure channel và lưu log; hạ tầng đã join domain nên không dựng lại.
 2. Chạy [01 — SERVERA: OU/group/user/GPO khung](scripts/01_SERVERA_AD_OU_Groups_GPO.ps1).
 3. Trong GPMC cấu hình `P07_Lock_15m`, `P07_Lock_5m`, `Starter_No_ControlPanel` → `P07_Restrict_ControlPanel`.
 4. Chạy [02 — SERVERB: NTFS và SMB share](scripts/02_SERVERB_File_Shares.ps1).
@@ -56,4 +60,4 @@ Kho tài liệu triển khai kỹ thuật cho môn **Quản trị hệ thống m
 - **Thành viên 2:** chịu trách nhiệm logic GPO, lệnh, phân quyền, đọc `gpresult`, xử lý lỗi, trình bày.
 - **Thành viên 3:** viết báo cáo PDF, tổng hợp minh chứng và làm slide.
 
-**Nguồn yêu cầu:** PDF “Đồ án môn học số 7 — Quản trị tập trung bằng GPO, Starter GPO và phân quyền tệp” (2 trang) do giảng viên cung cấp. Tài liệu trong repo triển khai dựa trên đề và có thêm các quy ước minh họa, được đánh dấu trong runbook.
+**Nguồn yêu cầu:** PDF “Đồ án môn học số 7 — Quản trị tập trung bằng GPO, Starter GPO và phân quyền tệp” (2 trang) do giảng viên cung cấp. Tài liệu trong repo triển khai dựa trên đề và biên bản TV1; tên user và thư mục đã đồng bộ trên các script.
