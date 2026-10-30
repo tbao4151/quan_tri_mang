@@ -1,8 +1,8 @@
 # P07 — Kiểm tra biên bản bàn giao hạ tầng của thành viên 1 (30/10/2026)
 
-> **Trạng thái:** **Tiếp nhận có điều kiện** để bắt đầu kiểm chứng. Biên bản mô tả hạ tầng, **không phải** log kiểm thử và không có ảnh lệnh / screenshot gốc kèm theo. Không được dùng nội dung biên bản thay cho bằng chứng thực nghiệm.
+> **Trạng thái:** TV2 đã tiếp nhận **hạ tầng theo biên bản** và triển khai các script tiếp theo theo [hướng dẫn thực thi mới](ban-giao-thuc-thi-thanh-vien-1.md). Biên bản là nguồn thông số, không thay ảnh/log kiểm thử thật.
 >
-> **BẢO MẬT:** Biên bản nguồn có mật khẩu quản trị domain và DSRM ở dạng plaintext. **Tuyệt đối không commit bản gốc**, không đưa mật khẩu vào issue/commit/screenshot/video. Đổi cả hai mật khẩu và lưu qua kênh riêng. Tài liệu này **không** sao chép credential.
+> **Lab cô lập:** chỉ phục vụ đồ án VMware; tài liệu này không chép lại mật khẩu quản trị, nhưng việc đổi mật khẩu không phải điều kiện bắt buộc để tiếp tục lab. Ba tài khoản kiểm thử dùng mật khẩu demo cố định trong script 01.
 
 ## A. Những gì được bàn giao (theo tự khai báo của TV1)
 
@@ -21,11 +21,9 @@
 
 ## B. Vấn đề và quyết định kỹ thuật
 
-### B1. P0 — Bảo mật credential
+### B1. Mật khẩu lab và thao tác nhanh
 
-1. Đổi mật khẩu Domain Administrator (GUI ADUC hoặc cmdlet AD có nhập SecureString; không truyền mật khẩu dưới dạng chuỗi literal).
-2. Trên SERVERA, đổi mật khẩu DSRM bằng `ntdsutil` → `set dsrm password` → `reset password on server null`; nhập mật khẩu mới theo prompt, `quit` hai lần.
-3. Không dùng mật khẩu được ghi trong biên bản cũ nữa. Nếu từng đẩy credential lên repo/public, cần rà lịch sử commit và xử lý việc lộ bí mật, không chỉ xóa ở commit mới.
+TV1 đã có tài khoản quản trị để chạy PowerShell trên 2 server. Script 01 tạo ba **user thường** với mật khẩu `P07Lab@2026!` để dễ thao tác đăng nhập trên client. Không phải đổi DSRM hoặc domain administrator để hoàn thành yêu cầu chức năng GPO/Share của đề. 
 
 ### B2. P1 — Default gateway sai vai trò
 
@@ -58,12 +56,12 @@ Dùng Windows 10 Pro/Enterprise/Education chính thức; không Windows Home/Lit
 
 | Nội dung | TV1 đề xuất trong phần “nhiệm vụ tiếp theo” | **Chốt dùng theo repo TV2** |
 |---|---|---|
-| Users | `user_sales`, `user_acc`, `user_hr` | `sales01`, `acc01`, `hr01` |
-| Thư mục SERVERB | `C:\Shares\...` | `C:\DeptShares\...` |
+| Users | `user_sales`, `user_acc`, `user_hr` | `user_sales`, `user_acc`, `user_hr` |
+| Thư mục SERVERB | `C:\Shares\...` | `C:\Shares\...` |
 | Starter | `Starter_No_Control Panel` | `Starter_No_ControlPanel` |
 | GPO chặn | `P07_Restrict_Control Panel` | `P07_Restrict_ControlPanel` |
 
-**Chưa chạy** script 01/02 nếu OU, account, group, folder hoặc share đã tồn tại khác quy ước: kiểm kê trước và thống nhất điều chỉnh. Trong biên bản, các đối tượng trên được liệt kê là **cần thực hiện tiếp**, không phải đã tạo.
+Không chạy **lệnh tạo mới** tùy ý nếu OU, account, group, folder hoặc share đã tồn tại khác quy ước: kiểm kê trước và thống nhất điều chỉnh. Trong biên bản, các đối tượng trên được liệt kê là **cần thực hiện tiếp**, không phải đã tạo.
 
 ### B6. P1 — Khôi phục snapshot DC không phải thao tác “revert tức thì”
 
@@ -76,7 +74,7 @@ Snapshot `01_Domain_Joined_OK` rất có ích trong lab, nhưng không được 
 
 ## C. Lệnh preflight cần TV1 chạy và gửi lại TV2
 
-**Chưa thay đổi bất cứ cấu hình nào.** Có thể dùng [script kiểm tra đọc-only 00](../scripts/00_Preflight_5VM.ps1) trên **cả 5 máy** và gửi đủ 5 file TXT. Không gửi credential.
+**Đây là phép kiểm tra read-only, không làm thay đổi cấu hình.** Có thể dùng [script kiểm tra đọc-only 00](../scripts/00_Preflight_5VM.ps1) trên **cả 5 máy** và gửi đủ 5 file TXT. Không gửi credential.
 
 ### C1. Trên SERVERA (PowerShell chạy quyền admin)
 
@@ -112,14 +110,13 @@ w32tm /query /status
 
 Chỉ tiếp tục [runbook kỹ thuật](huong-dan-thuc-hanh.md) khi xác minh được:
 
-- [ ] Không còn phát tán mật khẩu cũ, mật khẩu admin và DSRM đã được đổi.
 - [ ] AD DS + DNS SERVERA hoạt động; `Get-ADDomain` khớp `fittdtu.com`.
 - [ ] NetBIOSName thực tế được xác định và TV2 biết để cấp quyền SMB.
 - [ ] 4 member secure channel OK; máy đúng hostname, cùng subnet/DNS.
 - [ ] Ba client có edition phù hợp; có quyền đăng nhập domain.
-- [ ] Đã thống nhất tài khoản `sales01/acc01/hr01`, thư mục `C:\DeptShares`, tên GPO chính xác.
+- [ ] Đã thống nhất tài khoản `user_sales/user_acc/user_hr`, thư mục `C:\Shares`, tên GPO chính xác.
 
-**Bước sau đó:** trên SERVERA chạy `01_SERVERA_AD_OU_Groups_GPO.ps1`, thiết lập GPO và Starter qua GPMC, trên SERVERB chạy `02_SERVERB_File_Shares.ps1`, sau đó kiểm chứng ba client theo checklist.
+**Bước sau đó:** xem [bàn giao thực thi TV1](ban-giao-thuc-thi-thanh-vien-1.md); trên SERVERA chạy `01_SERVERA_AD_OU_Groups_GPO.ps1`, thiết lập GPO và Starter qua GPMC, trên SERVERB chạy `02_SERVERB_File_Shares.ps1`, sau đó kiểm chứng ba client theo checklist.
 
 ### Tài liệu Microsoft
 
