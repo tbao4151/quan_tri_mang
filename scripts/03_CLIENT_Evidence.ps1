@@ -1,8 +1,11 @@
 # P07 - Run on EACH client, SIGNED IN AS its own department USER, in ordinary (not elevated) PowerShell.
-# Creates evidence bundle on the client Desktop. The current user must remain sales01/acc01/hr01.
+# Creates evidence bundle on the client Desktop. The current user must remain user_sales/user_acc/user_hr.
 $ErrorActionPreference = 'Continue'
 $name = $env:COMPUTERNAME
 $user = (whoami)
+if ($name -notin @('PC-SAL-01','PC-ACC-01','PC-HR-01')) { throw 'Run this script only on one of the three P07 clients.' }
+$expectedUsers = @{'PC-SAL-01'='user_sales';'PC-ACC-01'='user_acc';'PC-HR-01'='user_hr'}
+if ($env:USERNAME -ine $expectedUsers[$name]) { throw "Log in as $($expectedUsers[$name]) on $name before collecting user GPO evidence. Current: $user" }
 $folder = Join-Path $env:USERPROFILE "Desktop\P07_Evidence_$name"
 New-Item -Path $folder -ItemType Directory -Force | Out-Null
 
