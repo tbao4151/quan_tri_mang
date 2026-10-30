@@ -14,7 +14,7 @@
 | ID | Máy/người dùng | Minh chứng cần thu | Kết quả kỳ vọng | Đã kiểm tra |
 |---|---|---|---|---|
 | E03 | SERVERA | Cay OU Employees Workstations Groups | 6 OU con va 3 group | [ ] |
-| E04 | SERVERA | Member cua 3 security groups | sales01 acc01 hr01 dung group | [ ] |
+| E04 | SERVERA | Member cua 3 security groups | user_sales user_acc user_hr dung group | [ ] |
 
 ## GPO
 
@@ -37,9 +37,9 @@
 
 | ID | Máy/người dùng | Minh chứng cần thu | Kết quả kỳ vọng | Đã kiểm tra |
 |---|---|---|---|---|
-| E12 | sales01 | Mo Control Panel | Access blocked | [ ] |
-| E13 | acc01 | Mo Control Panel | Access blocked | [ ] |
-| E14 | hr01 | Mo Control Panel | Allowed | [ ] |
+| E12 | user_sales | Mo Control Panel | Access blocked | [ ] |
+| E13 | user_acc | Mo Control Panel | Access blocked | [ ] |
+| E14 | user_hr | Mo Control Panel | Allowed | [ ] |
 
 ## Share
 
@@ -52,20 +52,20 @@
 
 | ID | Máy/người dùng | Minh chứng cần thu | Kết quả kỳ vọng | Đã kiểm tra |
 |---|---|---|---|---|
-| E17 | sales01 | Net use + This PC | S: SalesDocs | [ ] |
-| E18 | acc01 | Net use + This PC | A: AccountingDocs | [ ] |
-| E19 | hr01 | Net use + This PC | No S: A: | [ ] |
+| E17 | user_sales | Net use + This PC | S: SalesDocs | [ ] |
+| E18 | user_acc | Net use + This PC | A: AccountingDocs | [ ] |
+| E19 | user_hr | Net use + This PC | No S: A: | [ ] |
 
 ## UNC
 
 | ID | Máy/người dùng | Minh chứng cần thu | Kết quả kỳ vọng | Đã kiểm tra |
 |---|---|---|---|---|
-| E20 | sales01 | Read and write SalesDocs | Allowed | [ ] |
-| E21 | sales01 | Try AccountingDocs | Access denied | [ ] |
-| E22 | acc01 | Read and write AccountingDocs | Allowed | [ ] |
-| E23 | acc01 | Try SalesDocs | Access denied | [ ] |
-| E24 | hr01 | Try SalesDocs | Access denied | [ ] |
-| E25 | hr01 | Try AccountingDocs | Access denied | [ ] |
+| E20 | user_sales | Read and write SalesDocs | Allowed | [ ] |
+| E21 | user_sales | Try AccountingDocs | Access denied | [ ] |
+| E22 | user_acc | Read and write AccountingDocs | Allowed | [ ] |
+| E23 | user_acc | Try SalesDocs | Access denied | [ ] |
+| E24 | user_hr | Try SalesDocs | Access denied | [ ] |
+| E25 | user_hr | Try AccountingDocs | Access denied | [ ] |
 
 ## RSoP
 
@@ -92,5 +92,5 @@
 
 - Với mỗi ID, lưu ảnh/HTML/TXT hoặc video có hostname, username và thời điểm tương ứng.
 - Ghi cả thử nghiệm thành công và thất bại, đặc biệt quyền chéo qua UNC.
-- Không đưa mật khẩu hoặc thông tin nhạy cảm lên repo công khai.
+- Trong video/ảnh cần thấy tên máy và user test; tránh vô tình để lộ password khi gõ trên màn hình.
 - Bảng theo dõi có thể chỉnh sửa bằng Excel: [checklist-minh-chung.csv](checklist-minh-chung.csv).
